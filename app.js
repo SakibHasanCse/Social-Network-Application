@@ -161,5 +161,25 @@ http.listen(PORT, () => {
 
             res.render('feed/updateProfile')
         })
+        app.post('/getuser', (req, res) => {
+            const { accessToken } = req.fields
+            database.collection('users').findOne({ "accessToken": accessToken }, (err, user) => {
+                if (user == null) {
+                    res.json({
+                        "status": "error",
+                        "message": "User hase beeen Loged out . please login agin"
+                    })
+                } else {
+                    res.json({
+                        status: 'success',
+                        message: "User Finderd",
+                        data: user
+                    })
+                }
+            })
+        })
+        app.get('/logout', (req, res) => {
+            res.redirect('/login')
+        })
     })
 })
