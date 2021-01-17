@@ -23,7 +23,7 @@ const socketId = "";
 var users = [];
 
 var mainurl = 'http://localhost:3000'
-socket.on('connection', (socket) => {
+socket.on('connection', function (socket) {
     console.log('user connected', socket.id)
     socketId = socket.id
 
@@ -180,6 +180,46 @@ http.listen(PORT, () => {
         })
         app.get('/logout', (req, res) => {
             res.redirect('/login')
+        })
+        app.post('/uploadcoverImage', (req, res) => {
+            const { accessToken } = req.fields
+            var coverPhoto = ''
+            database.collection('users').findOne({ "accessToken": accessToken }, (err, result) => {
+                if (err || result == null) {
+                    return res.json({
+                        static: "error",
+                        message: 'User Not Found , Try agin'
+                    })
+
+                } else {
+                    if (req.files.coverPhoto.size > 0 && req.files.coverPhoto.type.includes('image')) {
+                        if (user.coverPhoto != '') {
+                            fileSystem.unlink(user.coverPhoto, (error) => {
+                                // 
+                            })
+                        }
+                        coverPhoto = '/public/images' + new Date().getTime() + "_" + req.fields.coverPhoto.name
+                        fileSystem.rename(req.files.coverPhoto.name, coverPhoto, (error) => {
+                            // 
+                        })
+                        database.collection('users').updateOne({ 'accessToken': accessToken }, { $set: { "coverPhoto": coverPhoto } }, (err, data) => {
+                            if (err) {
+
+                            } else {
+                                res.static(201).json({
+                                    data,
+                                    status: 'success',
+                                    message: 'Cover Photo is updated'
+                                })
+                            }
+
+                        })
+                    }
+                }
+
+
+
+            })
         })
     })
 })
