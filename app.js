@@ -158,7 +158,6 @@ http.listen(PORT, () => {
             })
         })
         app.get('/updateProfile', (req, res) => {
-
             res.render('feed/updateProfile')
         })
         app.post('/getuser', (req, res) => {
@@ -271,6 +270,42 @@ http.listen(PORT, () => {
                             status: 'error'
                         })
                     }
+                }
+            })
+        })
+
+        app.post('/updateProfile', (req, res) => {
+            const { accessToken, name, dob, city, country, aboutMe } = req.fields
+            console.log(req.fields)
+
+            database.collection('users').findOne({ "accessToken": accessToken }, (err, user) => {
+                if (err || user == null) {
+                    return res.json({
+                        status: 'error',
+                        message: 'User Not Found'
+                    })
+
+                } else {
+                    database.collection('users').updateOne({ "accessToken": accessToken },
+                        { $set: { "name": name, "dob": dob, "city": city, "country": country, "aboutMe": aboutMe } }, (err, result) => {
+
+                            if (err) {
+                                return res.json({
+                                    status: 'error',
+                                    message: 'User Not updated'
+                                })
+                            } else {
+                                // console.log(result)
+                                return res.json({
+                                    status: 'success',
+                                    message: 'User updated Successfully'
+                                })
+                            }
+
+
+
+                        })
+
                 }
             })
         })

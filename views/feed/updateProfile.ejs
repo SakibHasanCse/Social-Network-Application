@@ -45,12 +45,94 @@
             </div>
         </div>
     </section>
+    <section>
+        <div class="gap graph">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="page-contents" class="row">
+                            <div class="col-md-3">
+
+                            </div>
+                            <div class="col-md-6">
+                                <div class="central-info">
+                                    <h5 class="f-title">
+                                        <i class="ti-info-alt"></i>Update Profles
+                                        <form onsubmit="return doUpdateProfile(this);">
+                                            <div class="form-group">
+                                                <input type="text" name="name" required class="name">
+                                                <lable class="control-lable">Full Name</lable>
+                                                <i class="mtrl-select"></i>
+                                            </div>
+                                            <br><br>
+                                            <div class="form-group">
+                                                <input type="email" name="email" class="email">
+                                                <lable class="control-lable">Email</lable>
+                                                <i class="mtrl-select"></i>
+                                            </div>
+                                            <br><br>
+                                            <div class="form-group">
+                                                <input type="text" name="dob" required class="dob"
+                                                    placeholder="DD/MM/YYYY">
+                                                <lable class="control-lable">Date of Birth</lable>
+                                                <i class="mtrl-select"></i>
+                                            </div>
+                                            <br><br>
+
+                                            <div class="form-group">
+                                                <input type="text" name="city" required class="city">
+                                                <lable class="control-lable">City</lable>
+                                                <i class="mtrl-select"></i>
+                                            </div>
+                                            <br><br>
+                                            <br><br>
+
+                                            <div class="form-group">
+                                                <input type="text" name="country" required class="country">
+                                                <lable class="control-lable">Country</lable>
+                                                <i class="mtrl-select"></i>
+                                            </div>
+                                            <br><br>
+                                            <br><br>
+
+                                            <div class="form-group">
+                                                <input type="text" name="aboutMe" required class="aboutMe">
+                                                <lable class="control-lable">AboutMe</lable>
+                                                <i class="mtrl-select"></i>
+                                            </div>
+                                            <br><br>
+
+                                            <button class="mtr-btn" name="submit"
+                                                type="submit"><span>Save</span></button>
+
+                                        </form>
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
 
     <script>
         var isUpdateProfile = true
         function showProfiledata() {
             document.querySelector('.cover-photo').setAttribute('src', mainUrl + "/" + window.user.coverPhoto)
             document.querySelector('.profile-image').setAttribute('src', mainUrl + "/" + window.user.profileImage)
+
+
+            // document.querySelector('.user-name').innerHTML = window.user.name;
+
+            document.querySelector('.name').value = window.user.name;
+            document.querySelector('.email').value = window.user.email;
+            document.querySelector('.city').value = window.user.city;
+            document.querySelector('.country').value = window.user.country;
+            document.querySelector('.dob').value = window.user.dob;
+            document.querySelector('.aboutMe').value = window.user.aboutMe;
+
 
         }
 
@@ -88,6 +170,30 @@
             var formData = new FormData(form)
             formData.append("accessToken", localStorage.getItem("accessToken"))
             ajax.send(formData)
+        }
+
+        function doUpdateProfile(form) {
+            form.submit.setAttribute('disabled', 'disabled')
+            form.submit.innerHTML = ('<span>Loading...</span>')
+
+            var ajax = new XMLHttpRequest()
+            ajax.open('POST', '/updateProfile', true)
+            ajax.onreadystatechange = function () {
+                var response = JSON.parse(this.responseText)
+                if (this.readyState == 4 && this.status == 200) {
+                    form.submit.removeAttribute('disabled')
+                    form.submit.innerHTML = ('<span>Save</span>')
+
+                    alert(response.message)
+
+                } else {
+                    alert(response.message)
+                }
+            }
+            const formData = new FormData(form)
+            formData.append('accessToken', localStorage.getItem('accessToken'))
+            ajax.send(formData)
+            return false
         }
     </script>
     <%- include ('../include/footer')%>

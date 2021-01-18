@@ -1,16 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include ('../include/header.ejs')%>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+    <section>
+        <div class="gap gray-bg">
+            <div class="container-fluid">
+                <div class="col-md-12">
+                    <div id="page-contents" class="row">
+                        <div class="col-md-3">
 
-<body>
-    home page
+                        </div>
+                        <div class="col-md-6">
+                            <div id="add-post-box"></div>
+                            <div id="newsfeed" class="loadMore">
 
-</body>
+                            </div>
 
-</html>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        var isHomePage = true;
+
+    </script>
+    <%- include ('../include/footer.ejs')%>
