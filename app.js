@@ -79,7 +79,7 @@ http.listen(PORT, () => {
                             "password": newpassword,
                             "gender": gender,
                             "profileImage": "",
-                            "coverImage": "",
+                            "coverPhoto": "",
                             "dob": "",
                             "city": '',
                             "country": "",
@@ -192,33 +192,86 @@ http.listen(PORT, () => {
                     })
 
                 } else {
+                    console.log(req.files)
                     if (req.files.coverPhoto.size > 0 && req.files.coverPhoto.type.includes('image')) {
-                        if (user.coverPhoto != '') {
-                            fileSystem.unlink(user.coverPhoto, (error) => {
+                        if (result.coverPhoto != '') {
+                            fileSystem.unlink(result.coverPhoto, (error) => {
+                                console.log(error)
                                 // 
                             })
                         }
-                        coverPhoto = '/public/images' + new Date().getTime() + "_" + req.fields.coverPhoto.name
-                        fileSystem.rename(req.files.coverPhoto.name, coverPhoto, (error) => {
+                        coverPhoto = 'public/images/' + new Date().getTime() + "_" + req.files.coverPhoto.name
+                        fileSystem.rename(req.files.coverPhoto.path, coverPhoto, (error) => {
+                            console.log(error)
                             // 
                         })
+                        // fileSystem.writeFile(coverPhoto, req.files.coverPhoto.path, function (error) {
+                        //     console.log(error)
+
+                        // })
                         database.collection('users').updateOne({ 'accessToken': accessToken }, { $set: { "coverPhoto": coverPhoto } }, (err, data) => {
                             if (err) {
 
                             } else {
-                                res.static(201).json({
-                                    data,
+
+                                res.status(201).json({
+                                    data: mainurl + "/" + coverPhoto,
                                     status: 'success',
                                     message: 'Cover Photo is updated'
                                 })
                             }
 
                         })
+                    } else {
+                        console.log('hello')
+                        return res.json({
+                            message: "Pleasse Select a valid Image",
+                            status: 'error'
+                        })
                     }
                 }
 
 
 
+            })
+        })
+        app.post('/uploadprofleImage', (req, res) => {
+            const { accessToken } = req.fields
+            var profileImage = ''
+            database.collection('users').findOne({ "accessToken": accessToken }, (err, user) => {
+                if (err || user == null) {
+                    return res.json({
+                        message: 'User not Found',
+                        status: 'error'
+                    })
+                } else {
+
+                    if (req.files.profileImage.size > 0 && req.files.profileImage.type.includes('image')) {
+                        if (user.profileImage != '') {
+                            fileSystem.unlink(user.profileImage, (error) => {
+                                console.log(error)
+                            })
+                        }
+                        profileImage = "public/images/" + new Date().getTime() + "_"
+                        fileSystem.rename(req.files.profileImage.path, profileImage, (error) => {
+                            console.log(err)
+                        })
+
+                        database.collection('users').updateOne({ "accessToken": accessToken }, { $set: { "profileImage": profileImage } }, (err, result) => {
+                            return res.json({
+                                message: 'Profile Photo is Uploaded',
+                                data: mainurl + "/" + profileImage,
+                                status: 'success'
+                            })
+                        })
+
+                    } else {
+                        return res.json({
+                            message: 'Select Only Image',
+                            status: 'error'
+                        })
+                    }
+                }
             })
         })
     })
