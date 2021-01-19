@@ -413,7 +413,7 @@ http.listen(PORT, () => {
                     var id = []
                     id.push(user._id)
 
-                    database.collection('posts').find({ "user._id": { $in: id } })
+                    database.collection('posts').find({ "users._id": { $in: id } })
                         .sort({ "createdAt": -1 })
                         .limit(5)
                         .toArray((err, data) => {

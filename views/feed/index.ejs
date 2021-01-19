@@ -61,7 +61,7 @@
                 if (this.readyState == 4 && this.status == 200) {
                     const response = JSON.parse(this.responseText);
                     console.log(response)
-                    if (response.status == 200) {
+                    if (response.status == "success") {
                         var html = ''
                         for (var i = 0; i < response.data.length; i++) {
                             var data = response.data[i];
@@ -69,29 +69,29 @@
                             html += '<div class="user-post">'
                             html += '<div class="friend-info">'
                             html += '<figure>'
-                            html += '<img src="' + mainUrl + '/' + data.user.profileImage + '" style="height:45px; width:45px ; object-fit:cover"> '
+                            html += '<img src="' + mainUrl + '/' + data.users.profileImage + '" style="height:45px; width:45px ; object-fit:cover"> '
                             html += '</figure>'
 
                             html += '<div class="friend-name">'
                             html += '<ins>'
-                            html += '< href="' + mainUrl + '/' + data.user._id + '">'
-                            html += data.user.name
+                            html += '<a href="' + mainUrl + '/' + data.users._id + '">'
+                            html += data.users.name
                             html += '</a>'
                             html += '</ins>'
 
                             var createdAt = new Date(data.createdAt);
                             var date = createdAt.getDate() + "";
-                            date.padStart(2, "0") + "" + months[createdAt.getMonth()] + "," + createdAt.getFullYear()
+                            date = date.padStart(2, "0") + "" + months[createdAt.getMonth()] + "," + createdAt.getFullYear()
 
                             html += '<span>Published :' + date + '</span>'
                             html += '</div>'
                             html += '<div class="post-meta">'
-                            html += '< class="description">'
+                            html += '<div class="description">'
                             html += '<p>'
                             html += data.caption
 
-                            html += '</>'
-                            html += '/div'
+                            html += '</p>'
+                            html += '</div>'
 
                             if (data.image != "") {
                                 html += '<img src="' + mainUrl + '/' + data.image + '">'
