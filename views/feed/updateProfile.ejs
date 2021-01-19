@@ -172,6 +172,7 @@
             ajax.send(formData)
         }
 
+
         function doUpdateProfile(form) {
             form.submit.setAttribute('disabled', 'disabled')
             form.submit.innerHTML = ('<span>Loading...</span>')
@@ -186,8 +187,6 @@
 
                     alert(response.message)
 
-                } else {
-                    alert(response.message)
                 }
             }
             const formData = new FormData(form)
@@ -195,5 +194,6 @@
             ajax.send(formData)
             return false
         }
+
     </script>
     <%- include ('../include/footer')%>

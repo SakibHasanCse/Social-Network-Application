@@ -29,6 +29,8 @@ socket.on('connection', function (socket) {
 
 })
 
+import dotenv from 'dotenv'
+dotenv.config({ path: './config/config.env' })
 
 const PORT = process.env.PORT || 3000
 http.listen(PORT, () => {
@@ -36,7 +38,12 @@ http.listen(PORT, () => {
 
 
 
-    MongoClient.connect('mongodb://localhost:27017', (err, client) => {
+
+
+
+    const mongoURL = process.env.MONGOURL || 'mongodb:/localhost:27017'
+
+    MongoClient.connect(mongoURL, (err, client) => {
 
 
         var database = client.db('socialnetworks');
