@@ -309,5 +309,90 @@ http.listen(PORT, () => {
                 }
             })
         })
+        app.post('/addPost', (req, res) => {
+            const { accessToken, caption, _id } = req.fields
+            var image = ''
+            var video = ''
+            const type = req.fields.type
+            const createdAt = new Date().getTime()
+
+            database.collection('users').findOne({ "accessToken": accessToken }, (err, user) => {
+                if (err || user == null) {
+                    return res.json({
+                        status: 'error',
+                        message: 'User Not found'
+                    })
+                } else {
+                    if (req.files.image.size > 0 && req.files.image.type.includes('image')) {
+                        image = 'public/images/' + new Date().getTime() + '_' + new Date().getSeconds()
+                        fileSystem.rename(req.files.image.path, image, (err) => {
+                            if (err) {
+                                // 
+                            }
+                        })
+                    }
+                    if (req.files.video.size > 0 && req.files.video.type.includes('video')) {
+                        video = 'public/videos/' + new Date().getTime() + "_" + new Date().getSeconds()
+                        fileSystem.rename(req.files.video.path, video, (err) => {
+                            if (err) {
+
+                            }
+                        })
+                    }
+
+                    database.collection('posts').insertOne({
+                        "caption": caption,
+                        "video": video,
+                        "image": image,
+                        "createdAt": createdAt,
+                        "type": type,
+                        "likers": [],
+                        "groups": [],
+                        "shares": [],
+                        "users": {
+                            "_id": user._id,
+                            "name": user.name,
+                            "profileImage": user.profileImage,
+
+                        }
+                    }, (err, data) => {
+                        console.log(data)
+                        if (err) {
+                            console.log(err)
+                        } else {
+                            database.collection('users').updateOne({
+                                $push: {
+                                    "posts": {
+                                        "_id": data.insertedId,
+                                        "caption": caption,
+                                        "video": video,
+                                        "image": image,
+                                        "createdAt": createdAt,
+                                        "type": type,
+                                        "likers": [],
+                                        "groups": [],
+                                        "shares": [],
+                                    }
+                                }
+                            }, (err, result) => {
+                                console.log(result)
+
+                                if (err) {
+                                    console.log(err)
+
+                                } else {
+                                    return res.json({
+                                        message: "Post created successfully",
+                                        status: "success",
+                                    })
+                                }
+                            })
+
+                        }
+                    })
+                }
+            })
+
+        })
     })
 })

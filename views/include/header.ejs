@@ -43,24 +43,27 @@
                     html += '</figure>';
                     html += '<div class="newpst-input">';
                     html += '<form method="post" id="form-add-post" onsubmit="return doPost(this)">';
-                    html += '<input type="hidden" value="post" name="type"';
+                    html += '<input type="hidden" value="post" name="type">';
                     html += '<textarea name="caption" placeholder="write something" rows="2"></textarea>';
                     html += '<div class="attachments">';
                     html += '<ul>';
                     html += '<li>'
-                    html += '<img class="post-img-preview" style=" display:none;">';
-                    html += '<video class="post-video-preview" controls style=" display:none" > </video>';
+                    html += '<img id="post-img-preview" style="display:none;">';
+                    html += '</li>';
+                    html += '<li>'
+
+                    html += '<video id="post-video-preview" controls style=" display:none" > </video>';
                     html += '</li>';
                     html += '<li>';
                     html += '<i class="fa fa-image"></i>';
                     html += '<lable class="fileContainer">';
-                    html += '<input type="file" accept="image/*" onchange="previewImagePost(this)" >';
+                    html += '<input type="file" accept="image/*" name="image" onchange="previewImagePost(this)">';
                     html += '</lable">';
                     html += '</li>';
                     html += '<li>';
                     html += '<i class="fa fa-video-camera"></i>';
                     html += '<lable class="fileContainer">';
-                    html += '<input type="file" accept="video/*" onchange="previewVideoPost(this)">';
+                    html += '<input type="file" accept="video/*" name="video" onchange="previewVideoPost(this)">';
                     html += '</lable">';
 
                     html += '</li>';
@@ -76,32 +79,61 @@
 
                     document.getElementById('add-post-box').innerHTML = html
                 }
-                function previewImagePost(self) {
-                    var file = self.files
-                    if (file.length > 0) {
-                        var fileReader = new FileReader();
-                        fileReader.onload = function (event) {
-                            document.getElementById('post-img-preview').style.display = '',
-                                document.getElementById('post-img-preview').setAttribute('src', event.target.result);
-                        }
-                        fileReader.readAsDataURL.file(file[0])
+            }
+            function previewImagePost(self) {
+                var file = self.files
+                if (file.length > 0) {
+                    var fileReader = new FileReader();
+                    fileReader.onload = function (event) {
+                        document.getElementById('post-img-preview').style.display = '',
+                            document.getElementById('post-img-preview').setAttribute('src', event.target.result);
+                    }
+                    fileReader.readAsDataURL(file[0])
+                }
+
+            }
+            function previewVideoPost(self) {
+                var file = self.files;
+
+                if (file.length > 0) {
+                    var fileReader = new FileReader();
+                    fileReader.onload = function (event) {
+                        document.getElementById('post-video-preview').style.display = '',
+                            document.getElementById('post-video-preview').setAttribute('src', event.target.result);
                     }
 
+                    fileReader.readAsDataURL(file[0])
                 }
-                function previewVideoPost(self) {
-                    var file = self.files;
+            }
 
-                    if (file.length > 0) {
-                        var fileReader = new FileReader();
-                        fileReader.onload = function (event) {
-                            document.getElementById('post-video-preview').style.display = '',
-                                document.getElementById('post-video-preview').setAttribute('src', event.target.result);
+            function doPost(form) {
+                const ajax = new XMLHttpRequest();
+                ajax.open('POST', '/addPost', true);
+                ajax.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        const response = JSON.parse(ajax.responseText)
+                        alert(response.message)
+
+                        if (response.status == 'success') {
+                            docunment.getElementById('form-add-post').querySelector("input[name='image']").value = "";
+                            document.getElementById('form-add-post').querySelector("input[name='video']").value = "";
+                            document.getElementById('form-add-post').querySelector("textarea[name='caption']").value = "";
+
+
+                            document.getElementById('post-video-previe').style.display = "none"
+                            document.getElementById('post-img-previe').style.display = "none"
+
                         }
 
-                        fileReader.readAsDataURL.file(file[0])
+
                     }
                 }
-            };
+                const formData = new FormData(form);
+                formData.append('accessToken', localStorage.getItem('accessToken'))
+                ajax.send(formData)
+                return false
+            }
+
         </script>
         <style>
             #post-img-preview,
