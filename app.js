@@ -318,13 +318,17 @@ http.listen(PORT, () => {
 
             database.collection('users').findOne({ "accessToken": accessToken }, (err, user) => {
                 if (err || user == null) {
+                    console.log(err)
+
                     return res.json({
                         status: 'error',
                         message: 'User Not found'
                     })
                 } else {
                     if (req.files.image.size > 0 && req.files.image.type.includes('image')) {
-                        image = 'public/images/' + new Date().getTime() + '_' + new Date().getSeconds()
+                        image = 'public/images/' + new Date().getTime() + '_' + req.files.image.name
+                        // image = 'public/images/' + new Date().getTime() + '_' + new Date().getSeconds()
+
                         fileSystem.rename(req.files.image.path, image, (err) => {
                             if (err) {
                                 // 
@@ -332,7 +336,9 @@ http.listen(PORT, () => {
                         })
                     }
                     if (req.files.video.size > 0 && req.files.video.type.includes('video')) {
-                        video = 'public/videos/' + new Date().getTime() + "_" + new Date().getSeconds()
+                        video = 'public/videos/' + new Date().getTime() + "_" + req.files.video.name
+                        // image = 'public/images/' + new Date().getTime() + '_' + new Date().getSeconds()
+
                         fileSystem.rename(req.files.video.path, video, (err) => {
                             if (err) {
 
@@ -356,11 +362,11 @@ http.listen(PORT, () => {
 
                         }
                     }, (err, data) => {
-                        console.log(data)
+                        // console.log(data)
                         if (err) {
                             console.log(err)
                         } else {
-                            database.collection('users').updateOne({
+                            database.collection('users').updateOne({ "accessToken": accessToken }, {
                                 $push: {
                                     "posts": {
                                         "_id": data.insertedId,
@@ -375,7 +381,7 @@ http.listen(PORT, () => {
                                     }
                                 }
                             }, (err, result) => {
-                                console.log(result)
+                                // console.log(result)
 
                                 if (err) {
                                     console.log(err)
@@ -393,6 +399,43 @@ http.listen(PORT, () => {
                 }
             })
 
+        })
+        app.post('/getNewsFeedPost', (req, res) => {
+            const accessToken = req.fields.accessToken
+            database.collection('users').findOne({ "accessToken": accessToken }, (err, user) => {
+                if (err || user == null) {
+                    return res.json({
+                        message: "User Not Found , Try agin",
+                        status: "error"
+                    })
+
+                } else {
+                    var id = []
+                    id.push(user._id)
+
+                    database.collection('posts').find({ "user._id": { $in: id } })
+                        .sort({ "createdAt": -1 })
+                        .limit(5)
+                        .toArray((err, data) => {
+                            if (err) {
+                                console.log(err)
+                                return res.json({
+                                    message: "Posts fatch Fields",
+                                    status: "error"
+
+                                })
+                            } else {
+                                return res.json({
+                                    message: "Posts fatch success",
+                                    status: "success",
+                                    data: data
+                                })
+
+                            }
+                        })
+
+                }
+            })
         })
     })
 })
