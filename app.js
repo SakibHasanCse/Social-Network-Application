@@ -360,6 +360,7 @@ http.listen(PORT, () => {
                         "createdAt": createdAt,
                         "type": type,
                         "likers": [],
+                        "comments": [],
                         "groups": [],
                         "shares": [],
                         "users": {
@@ -383,6 +384,8 @@ http.listen(PORT, () => {
                                         "createdAt": createdAt,
                                         "type": type,
                                         "likers": [],
+                                        "comments": [],
+
                                         "groups": [],
                                         "shares": [],
                                     }

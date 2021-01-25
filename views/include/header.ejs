@@ -36,6 +36,52 @@
                 var mainUrl = 'http://localhost:3000';
                 var months = ["January", "February", "March", "April", "May", "June", "July",
                     "August", "September", "October", "November", "December"];
+                function loadLikesfunction(data) {
+                    var isLiked = false;
+
+                    for (var i = 0; i < data.likers.length; i++) {
+                        var likers = data.likers[i];
+                        if (likers._id == window.user._id) {
+                            isLiked = true;
+                            break;
+                        }
+
+                    }
+
+                    var html = '';
+
+                    html += '<div class"we-video-info>';
+                    html += '<ul>';
+                    html += '<li>';
+                    var className = '';
+                    if (isLiked) {
+                        className = 'like';
+                    } else {
+                        className = 'none';
+                    }
+                    html += '<span class="' + className + '" onclick="toggleLikePost(this)" data-id="' + data._id + '"> ';
+                    html += '<i class="ti-thumb-up"></i>';
+                    html += '<ins>' + data.likers.length + '</ins>';
+                    html += '</span>';
+                    html += '</li>';
+
+                    html += '<li>';
+                    html += '<span class="comment" title="Comments">';
+                    html += '<i class="fa fa-comments-o"></i>';
+                    html += '<ins>' + data.comments.length + ' </ins>';
+
+                    html += '</span>';
+                    html += '</li>';
+                    html += '<li>';
+                    html += '<span class="share" onclick="sharePost(this)" data-id="' + data._id + '">';
+                    html += '<i class="ti-share"></i>';
+                    html += '<ins>' + data.shares.length + '</ins>';
+                    html += '</span>';
+                    html += '</li>';
+                    html += '</ul>';
+                    html += '</div>';
+                    return html
+                }
                 function showAddPost() {
                     if (localStorage.getItem('accessToken')) {
 
@@ -79,6 +125,8 @@
                         html += '</div>';
                         html += '</div>';
                         html += '</div>';
+
+
 
 
                         document.getElementById('add-post-box').innerHTML = html
