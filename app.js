@@ -6,7 +6,7 @@ import fileSystem from 'fs'
 import bcrypt from 'bcrypt'
 const MongoClient = require('mongodb').MongoClient
 
-// const objectId = mongoClint.ObjectId
+const ObjectId = mongoClint.ObjectId
 const http = require('http').createServer(app)
 
 app.use(frombidible())
@@ -444,6 +444,73 @@ http.listen(PORT, () => {
                             }
                         })
 
+                }
+            })
+        })
+        app.post('/togoleLikePost', (req, res) => {
+            const { _id, accessToken } = req.fields
+
+            database.collection('users').findOne({ 'accessToken': accessToken }, (err, user) => {
+                if (err || !user) {
+                    return res.json({
+                        message: 'User not found',
+                        status: 'error'
+                    })
+                } else {
+                    database.collection('posts').findById(_id, (err, post) => {
+                        if (err || !post) {
+                            return res.json({
+                                message: 'Posts not found',
+                                status: 'error'
+                            })
+                        } else {
+                            var isLiked = false;
+
+                            for (var i = 0; i > post.likers.length; i++) {
+                                var liker = post.likers[i]
+
+                                if (liker._id.toString() === user._id.toString()) {
+                                    isLiked = true;
+                                    break;
+                                }
+                            }
+                            if (isLiked) {
+                                database.collection('posts').updateOne({ "_id": ObjectId(_id) }, {
+                                    $pull: {
+                                        "likers": { "id": user._id }
+
+                                    }
+                                }, (err, result) => {
+                                    if (err || !result) {
+                                        return res.json({
+                                            message: 'Posts not Updated',
+                                            status: 'error'
+                                        })
+                                    } else {
+                                        database.collection('users').updateOne({
+                                            $and: [{ "_id": post.user._id }, { "posts._id": post._id }]
+                                        }, {
+                                            $pull: {
+                                                "posts.$[].likers": {
+                                                    "_id": user._id
+
+                                                }
+                                            }
+                                        })
+
+                                        return res.json({
+                                            message: 'Post hase been unliked',
+                                            status: 'UnLiked'
+                                        })
+
+                                    }
+
+                                })
+                            }
+
+
+                        }
+                    })
                 }
             })
         })

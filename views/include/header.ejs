@@ -6,10 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/public/css/responsive.css">
+    <link rel="stylesheet" href="/public/css/style.css">
     <link rel="stylesheet" href="/public/css/main.min.css">
     <link rel="stylesheet" href="/public/css/color.css">
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/responsive.css">
 </head>
 
 <body>
@@ -50,7 +50,7 @@
 
                     var html = '';
 
-                    html += '<div class"we-video-info>';
+                    html += '<div class"we-video-info">';
                     html += '<ul>';
                     html += '<li>';
                     var className = '';
@@ -81,6 +81,39 @@
                     html += '</ul>';
                     html += '</div>';
                     return html
+                }
+
+                function toggleLikePost(self) {
+                    var _id = self.getAttribute('data-id')
+                    var ajax = new XMLHttpRequest();
+                    ajax.open('POST', mainUrl + '/togoleLikePost' + 'postLike')
+                    ajax.onreadystatechange = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            var response = JSON.parse(this.responseText);
+                            if (response.status == 200) {
+
+                                self.className = 'open'
+                                var like = parseInt(self.querySelector('ins').innerHTML)
+                                like++
+                            }
+                            if (response.status == "unliked") {
+                                self.className = 'none'
+                                var like = paseInt(self.querySelector('ins').innerHTML)
+                                like--
+                                self.querySelector('ins').innerHTML = likes
+
+                            }
+                            if (response.status == 'error') {
+                                alert(response.error)
+                            }
+                        }
+                    }
+                    var formData = new FormData();
+                    formData.append('accessToken', localStorage.getItem('accessToken'))
+                    formData.append('_id', _id)
+                    ajax.send(formData)
+
+                    return false
                 }
                 function showAddPost() {
                     if (localStorage.getItem('accessToken')) {
