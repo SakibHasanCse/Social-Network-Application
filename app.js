@@ -4,11 +4,12 @@ import jtw from 'jsonwebtoken'
 import frombidible from 'express-formidable'
 import fileSystem from 'fs'
 import bcrypt from 'bcrypt'
-const MongoClient = require('mongodb').MongoClient
+import mongodb from 'mongodb'
+const MongoClient = mongodb.MongoClient
 
-const ObjectId = mongoClint.ObjectId
+const ObjectId = mongodb.ObjectId
 const http = require('http').createServer(app)
-
+import mongoose from 'mongoose'
 app.use(frombidible())
 
 
@@ -35,10 +36,6 @@ dotenv.config({ path: './config/config.env' })
 const PORT = process.env.PORT || 3000
 http.listen(PORT, () => {
     console.log(`Server Running on port ${PORT}`)
-
-
-
-
 
 
     const mongoURL = process.env.MONGOURL || 'mongodb:/localhost:27017'
@@ -93,7 +90,7 @@ http.listen(PORT, () => {
                             "aboutme": "",
                             "friends": [],
                             "pages": [],
-                            "notification": [],
+                            "notifications": [],
                             "groups": [],
                             "posts": []
                         }, function (error, data) {
@@ -456,14 +453,26 @@ http.listen(PORT, () => {
                         message: 'User not found',
                         status: 'error'
                     })
-                } else {
-                    database.collection('posts').findById(_id, (err, post) => {
-                        if (err || !post) {
+                }
+                else {
+
+                    database.collection('posts').findOne({ "_id": ObjectId(_id) }, (err, post) => {
+                        console.log(err)
+
+                        if (err) {
                             return res.json({
-                                message: 'Posts not found',
+                                message: 'Somthing went wrong',
+                                status: 'error'
+                            })
+                        }
+                        console.log(post)
+                        if (post == null) {
+                            return res.json({
+                                message: 'Posts not Exist',
                                 status: 'error'
                             })
                         } else {
+
                             var isLiked = false;
 
                             for (var i = 0; i > post.likers.length; i++) {
@@ -477,18 +486,21 @@ http.listen(PORT, () => {
                             if (isLiked) {
                                 database.collection('posts').updateOne({ "_id": ObjectId(_id) }, {
                                     $pull: {
-                                        "likers": { "id": user._id }
+                                        "likers": { "_id": user._id }
 
                                     }
                                 }, (err, result) => {
                                     if (err || !result) {
+                                        console.log(err)
                                         return res.json({
                                             message: 'Posts not Updated',
                                             status: 'error'
                                         })
                                     } else {
                                         database.collection('users').updateOne({
-                                            $and: [{ "_id": post.user._id }, { "posts._id": post._id }]
+                                            $and: [
+                                                { "_id": post.users._id },
+                                                { "posts._id": post._id }]
                                         }, {
                                             $pull: {
                                                 "posts.$[].likers": {
@@ -506,6 +518,54 @@ http.listen(PORT, () => {
                                     }
 
                                 })
+                            } else {
+
+
+
+                                database.collection('users').updateOne({ "_id": post.users._id }, {
+                                    $push: {
+                                        "notifications": {
+                                            "type": "Photo_liked",
+                                            "_id": ObjectId(),
+                                            "content": user.name + "hase liked your photo",
+                                            "profileImage": user.profileImage,
+                                            "createdAt": new Date().getTime()
+                                        }
+                                    }
+                                })
+
+
+                                database.collection('posts').updateOne({ "_id": ObjectId(_id) }, {
+                                    $push: {
+                                        "likers": {
+                                            "_id": user._id,
+                                            "profileImage": user.profileImage,
+                                            "name": user.name
+
+                                        }
+                                    }
+                                }, (err, result) => {
+
+                                    if (err) {
+                                        console.log(err)
+
+                                    } else {
+                                        database.collection('users').updateOne({
+                                            $and:
+                                                [{ "_id": user._id },
+                                                { "posts._id": post._id }]
+                                        },
+                                            {
+                                                $push:
+                                                {
+                                                    "posts.$[].likers":
+                                                        { "_id": user._id, "profileImage": user.profileImage, "name": user.name }
+                                                }
+                                            })
+
+                                        return res.json({ message: 'Post Liked Success', status: 'success' })
+                                    }
+                                })
                             }
 
 
@@ -513,6 +573,108 @@ http.listen(PORT, () => {
                     })
                 }
             })
+        })
+        app.post('/postComment', (req, res, next) => {
+            const { accessToken, comment, _id, } = req.fields
+            console.log(req.fields.comment)
+            const createdAt = new Date().getTime()
+            database.collection('users')
+                .findOne({ "accessToken": accessToken }, (err, user) => {
+
+                    if (err || !user) {
+                        return res.json({
+                            message: 'User Not Found , Try agin',
+                            status: 'error'
+                        })
+                    } else {
+
+                        database.collection('posts')
+                            .findOne({ "_id": ObjectId(_id) }, (err, post) => {
+                                if (err || post == null) {
+                                    return res.json({
+                                        message: 'Post not found , Try agin',
+                                        status: 'error'
+                                    })
+                                } else {
+                                    var commetId = ObjectId()
+                                    database.collection('posts')
+                                        .updateOne({ "_id": _id }, {
+                                            $push: {
+                                                comments: {
+                                                    "_id": commetId,
+                                                    "user": {
+                                                        "name": user.name,
+                                                        "profileImage": user.profileImage,
+                                                        "_id": user._id
+
+                                                    },
+                                                    "createdAt": createdAt,
+                                                    "comment": comment,
+                                                    "replyers": [],
+
+
+                                                }
+                                            }
+                                        }, (err, result) => {
+                                            if (err) {
+                                                return res.json({
+                                                    message: 'Comment not created , Try agin',
+                                                    status: 'error'
+                                                })
+                                            } else {
+                                                if (user._id.toString() != post.users._id.toString()) {
+                                                    database.collection('users').updateOne({ "_id": post.users._id }, {
+                                                        $push: {
+                                                            "notifications": {
+                                                                "_id": ObjectId(),
+                                                                "type": "new_comment",
+                                                                "content": user.name + "Commented On Your Post",
+                                                                "createdAt": new Date().getTime(),
+                                                                "profileImage": user.profileImage,
+
+
+
+                                                            }
+                                                        }
+                                                    })
+                                                }
+                                                database.collection('users').updateOne({
+                                                    $and:
+                                                        [
+                                                            { "_id": post.users._id },
+                                                            { "posts._id": post._id }
+                                                        ]
+                                                }, {
+                                                    $push: {
+                                                        "posts.$[].comments": {
+                                                            "_id": commetId,
+                                                            "user": {
+                                                                "_id": user._id,
+                                                                "name": user.name,
+                                                                "profileImage": user.profileImage,
+
+
+                                                            },
+                                                            "comment": comment,
+                                                            "createdAt": createdAt,
+                                                            "replyers": []
+                                                        }
+
+                                                    }
+                                                })
+
+                                                return res.json({
+                                                    message: 'Comment Created Successfully',
+                                                    status: 'success '
+                                                })
+                                            }
+                                        })
+
+
+                                }
+                            })
+                    }
+                })
         })
     })
 })
