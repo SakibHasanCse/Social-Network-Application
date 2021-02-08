@@ -465,7 +465,7 @@ http.listen(PORT, () => {
                                 status: 'error'
                             })
                         }
-                        console.log(post)
+
                         if (post == null) {
                             return res.json({
                                 message: 'Posts not Exist',
@@ -474,9 +474,12 @@ http.listen(PORT, () => {
                         } else {
 
                             var isLiked = false;
-
-                            for (var i = 0; i > post.likers.length; i++) {
+                            console.log('user' + user._id.toString())
+                            console.log('postl' + post.likers.length)
+                            for (var i = 0; i < post.likers.length; i++) {
                                 var liker = post.likers[i]
+                                console.log('post.likers' + liker)
+
 
                                 if (liker._id.toString() === user._id.toString()) {
                                     isLiked = true;
@@ -484,19 +487,23 @@ http.listen(PORT, () => {
                                 }
                             }
                             if (isLiked) {
+                                console.log('post.likers1')
+
                                 database.collection('posts').updateOne({ "_id": ObjectId(_id) }, {
                                     $pull: {
                                         "likers": { "_id": user._id }
 
                                     }
                                 }, (err, result) => {
-                                    if (err || !result) {
+                                    if (err) {
                                         console.log(err)
                                         return res.json({
                                             message: 'Posts not Updated',
                                             status: 'error'
                                         })
                                     } else {
+                                        console.log('post.likers2')
+
                                         database.collection('users').updateOne({
                                             $and: [
                                                 { "_id": post.users._id },
@@ -512,7 +519,7 @@ http.listen(PORT, () => {
 
                                         return res.json({
                                             message: 'Post hase been unliked',
-                                            status: 'UnLiked'
+                                            status: 'unliked'
                                         })
 
                                     }
@@ -520,6 +527,7 @@ http.listen(PORT, () => {
                                 })
                             } else {
 
+                                console.log('post.likers3')
 
 
                                 database.collection('users').updateOne({ "_id": post.users._id }, {
@@ -562,6 +570,8 @@ http.listen(PORT, () => {
                                                         { "_id": user._id, "profileImage": user.profileImage, "name": user.name }
                                                 }
                                             })
+                                        console.log('post.likers4')
+
 
                                         return res.json({ message: 'Post Liked Success', status: 'success' })
                                     }

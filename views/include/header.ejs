@@ -50,7 +50,7 @@
 
                     var html = '';
 
-                    html += '<div class"we-video-info">';
+                    html += '<div class="we-video-info">';
                     html += '<ul>';
                     html += '<li>';
                     var className = '';
@@ -59,6 +59,7 @@
                     } else {
                         className = 'none';
                     }
+                    console.log(className)
                     html += '<span class="' + className + '" onclick="toggleLikePost(this)" data-id="' + data._id + '"> ';
                     html += '<i class="ti-thumb-up"></i>';
                     html += '<ins>' + data.likers.length + '</ins>';
@@ -84,22 +85,23 @@
                 }
 
                 function toggleLikePost(self) {
+
                     var _id = self.getAttribute('data-id')
                     var ajax = new XMLHttpRequest();
                     ajax.open('POST', mainUrl + '/togoleLikePost', true);
                     ajax.onreadystatechange = function () {
                         if (this.readyState == 4 && this.status == 200) {
                             var response = JSON.parse(this.responseText);
-                            if (response.status == 200) {
-
-                                self.className = 'open'
-                                var like = parseInt(self.querySelector('ins').innerHTML)
-                                like++
+                            if (response.status == "success") {
+                                self.className = 'like'
+                                var likes = parseInt(self.querySelector('ins').innerHTML);
+                                likes++;
+                                self.querySelector('ins').innerHTML = likes
                             }
                             if (response.status == "unliked") {
-                                self.className = 'none'
-                                var like = paseInt(self.querySelector('ins').innerHTML)
-                                like--
+                                self.className = ''
+                                var likes = parseInt(self.querySelector('ins').innerHTML);
+                                likes--;
                                 self.querySelector('ins').innerHTML = likes
 
                             }
